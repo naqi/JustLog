@@ -74,6 +74,7 @@ public final class Logger: NSObject {
     }
     
     public func setup() {
+        internalLogger.removeAllDestinations()
         
         let format = "$Dyyyy-MM-dd HH:mm:ss.SSS$d $T $C$L$c: $M"
         
