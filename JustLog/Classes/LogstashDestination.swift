@@ -92,9 +92,11 @@ public class LogstashDestination: BaseDestination  {
     }
     
     func addLog(_ dict: [String: Any]) {
-        let time = mach_absolute_time()
-        let logTag = Int(truncatingIfNeeded: time)
-        logsToShip[logTag] = dict
+        logDispatchQueue.addOperation { [weak self] in
+            let time = mach_absolute_time()
+            let logTag = Int(truncatingIfNeeded: time)
+            self?.logsToShip[logTag] = dict
+        }
     }
     
     func dataToShip(_ dict: [String: Any]) -> Data {
@@ -125,8 +127,8 @@ extension LogstashDestination: AsyncSocketManagerDelegate {
     
     
     func socket(_ socket: GCDAsyncSocket, didWriteDataWithTag tag: Int) {
-        logDispatchQueue.addOperation {
-            self.logsToShip[tag] = nil
+        logDispatchQueue.addOperation { [weak self, tag] in
+            self?.logsToShip[tag] = nil
         }
         
         if let completionHandler = self.completionHandler {
@@ -149,4 +151,4 @@ extension LogstashDestination: AsyncSocketManagerDelegate {
         completionHandler = nil
     }
 }
- 
+
